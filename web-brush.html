@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <style>
+      html, body {
+      background: #000;
+      color: #fff;
+      }
+      canvas{
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Click to clear the screen<br/>
+    Right-click then save-image-as to save</p>
+    <canvas></canvas>
+    <script>
+      const setCanvas = function(){
+        const canvas = document.querySelector('canvas');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.display = 'block';
+
+        return canvas;
+      };
+
+      const setContext = function(canvas, dotColor, strokeColor){
+        const context = canvas.getContext('2d');
+
+        context.fillStyle = dotColor;
+        context.lineWidth = .2;
+        context.strokeStyle = strokeColor;
+
+        return context;
+      };
+
+      const setDots = function(number, distance, radius){
+        return {
+          number: number,
+          distance: distance,
+          radius: radius
+        };
+      };
+
+      const setNewDot = function(canvas){
+        return {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: -.5 + Math.random(),
+          vy: -.5 + Math.random(),
+          radius: Math.random()
+        };
+      };
+
+      const drawDot = function(context, dot){
+        context.beginPath();
+        context.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2, false);
+        context.fill();
+      };
+
+      const drawLines = function(canvas, context, arrayOfDots, mousePosition, distance){
+        //context.clearRect(0, 0, canvas.width, canvas.height);
+        arrayOfDots.forEach(function(element){
+          if((Math.abs(element.x - mousePosition.x) < distance) && (Math.abs(element.y - mousePosition.y) < distance)){
+            context.beginPath();
+            context.moveTo(mousePosition.x, mousePosition.y);
+            context.lineTo(element.x, element.y);
+            context.stroke();
+            context.closePath();
+          }
+        })
+      };
+      const createDots = function(canvas, context, dots, arrayOfDots){
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        //draw and save all dots
+        for (i = 0; i < dots.number; i++){
+          let dot = setNewDot(canvas);
+          drawDot(context, dot);
+          arrayOfDots.push(dot);
+        }
+      }
+
+      window.onload = function() {
+        const 
+          canvas = setCanvas(),
+          context = setContext(canvas, '#000', '#fff'),
+          dots = setDots(1000, 100, 50);
+          drawDot(context, 100, 100, 5);
+
+        let arrayOfDots = [];
+          mousePosition = {
+            x: 30 * canvas.width / 100,
+            y: 30 * canvas.height / 100
+          };
+
+        createDots(canvas, context, dots, arrayOfDots);
+
+        window.onmousemove = function(parameter) {
+          mousePosition.x = parameter.pageX;
+          mousePosition.y = parameter.pageY;
+
+          drawLines(canvas, context, arrayOfDots, mousePosition, 100);
+        }
+
+        window.onclick = function(){
+          arrayOfDots = [];
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          createDots(canvas, context, dots, arrayOfDots);
+        }
+      }
+    </script>
+  </body>
+</html>
