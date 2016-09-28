@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake</title>
+  <style type="text/css">
+    html, body {
+      background: #000;
+      color: #fff;
+    }
+    canvas{
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas></canvas>
+
+  <script type="text/javascript">
+    const setCanvas = function(){
+      const canvas = document.querySelector('canvas');
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      canvas.style.display = 'block';
+
+      return canvas;
+    };
+
+    const setContext = function(canvas, dotColor, strokeColor){
+      const context = canvas.getContext('2d');
+
+      context.fillStyle = dotColor;
+      context.lineWidth = .2;
+      context.strokeStyle = strokeColor;
+
+      return context;
+    };
+
+    const checkBorders = function(context, options){
+      if(options.x + options.width >= options.canvasWidth){
+        options.x = 0;
+      }
+      if(options.y + options.height >= options.canvasHeight){
+        options.y = 0;
+      }
+      return options;
+    };
+
+    const drawSnake = function(context, options){
+      context.beginPath();
+      context.fillStyle = options.color;
+      context.fillRect(options.x, options.y, options.width, options.height);
+      context.closePath();
+    };
+
+    const grow = function(options){
+      options.width +=10;
+      return options;
+    };
+
+    const setDirection = function(options){
+      switch (options.direction) {
+        case 37:
+          options.x -= 10;
+          break;
+        case 38:
+          options.y -= 10;
+          break;
+        case 39:
+          options.x += 10;
+          break;
+        case 40:
+          options.y += 10;
+          break;
+        }
+      return options;
+    };
+
+    const rotate = function(context, options){
+      switch (options.direction) {
+        case 37:
+        case 39:
+          
+          break;
+        case 38:
+        case 40:
+
+          break;
+        }
+    }
+
+    const gameLoop = function(context, options) {
+      context.clearRect(options.x, options.y, options.width, options.height);
+
+      window.onkeydown = function(e){
+        options.direction = e.keyCode;
+      }
+      //rotate(context, options);
+      setDirection(options);
+
+      /* cresce quando clicado. melhorar
+      window.onclick = function(){
+        options = grow(options);
+      }
+      */
+      options = checkBorders(context, options);
+      
+      // must be the last line. will reflect all changes and re-draw the element
+      drawSnake(context, options);
+
+      setTimeout(function(){
+        gameLoop(context, options, options.frameLength);
+      }, options.frameLength); //do it all again
+    };
+
+    window.onload = function() {
+      const 
+        canvas = setCanvas(),
+        context = setContext(canvas, '#000', '#fff')
+        options = {
+          color: '#fe57a1',
+          x: parseInt(Math.random() * canvas.width),
+          y: parseInt(Math.random() * canvas.height),
+          width: 20,
+          height: 10,
+          frameLength: 100,
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height,
+          direction: 40
+        };
+
+      gameLoop(context, options);
+
+    }
+  </script>
+</body>
+</html>
