@@ -32,110 +32,156 @@
       return canvas;
     };
 
-    const setContext = function(canvas, dotColor, strokeColor){
+    const setContext = function(canvas, fillColor){
       const context = canvas.getContext('2d');
 
-      context.fillStyle = dotColor;
+      context.fillStyle = fillColor;
       context.lineWidth = .2;
-      context.strokeStyle = strokeColor;
 
       return context;
     };
 
-    const checkBorders = function(context, options){
-      if(options.x + options.width >= options.canvasWidth){
-        options.x = 0;
-      }
-      if(options.y + options.height >= options.canvasHeight){
-        options.y = 0;
-      }
-      return options;
-    };
-
-    const drawSnake = function(context, options){
+    const drawBlock = function(context, x, y){
       context.beginPath();
-      context.fillStyle = options.color;
-      context.fillRect(options.x, options.y, options.width, options.height);
+      context.fillRect(x, y, 15, 15);
       context.closePath();
     };
 
-    const grow = function(options){
-      options.width +=10;
-      return options;
+    const eraseBlock = function(context, x, y){
+      context.clearRect(x, y, 15, 15);
     };
 
-    const setDirection = function(options){
-      switch (options.direction) {
+    const advance = function(context, snake, direction){
+      //detect switch direction
+      snake.map(function(e){
+        eraseBlock(context, e.x, e.y);
+      });
+      switch (direction) {
         case 37:
-          options.x -= 10;
+          snake.push({
+            x:snake[snake.length - 1].x - 10,
+            y:snake[snake.length - 1].y
+          });
+          snake.shift();
           break;
         case 38:
-          options.y -= 10;
+          snake.push({
+            x:snake[snake.length - 1].x,
+            y:snake[snake.length - 1].y - 10
+          });
+          snake.shift();
           break;
         case 39:
-          options.x += 10;
+          snake.push({
+            x:snake[snake.length - 1].x + 10,
+            y:snake[snake.length - 1].y
+          });
+          snake.shift();
           break;
         case 40:
-          options.y += 10;
+          snake.push({
+            x:snake[snake.length - 1].x,
+            y:snake[snake.length - 1].y + 10
+          });
+          snake.shift();
           break;
-        }
-      return options;
+      }
+
+      snake.map(function(e){
+        drawBlock(context, e.x, e.y);
+      });
     };
 
-    const rotate = function(context, options){
-      switch (options.direction) {
+    const grow = function(snake, direction){
+      switch (direction) {
         case 37:
-        case 39:
-          
+          snake.push({
+            x:snake[snake.length - 1].x - 10,
+            y:snake[snake.length - 1].y
+          });
           break;
         case 38:
-        case 40:
-
+          snake.push({
+            x:snake[snake.length - 1].x,
+            y:snake[snake.length - 1].y - 10
+          });
           break;
+        case 39:
+          snake.push({
+            x:snake[snake.length - 1].x + 10,
+            y:snake[snake.length - 1].y
+          });
+          break;
+        case 40:
+          snake.push({
+            x:snake[snake.length - 1].x,
+            y:snake[snake.length - 1].y + 10
+          });
+          break;
+      }
+      return snake;
+    };
+
+    const checkBorders = function(canvas, head){
+      if((head.x + 15 >= canvas.width) || (head.x - 15 <= 0)){
+        console.log('ops')
+      }
+      if((head.y + 15 >= canvas.height) || (head.y - 15 <= 0)){
+        console.log('ops')
+      }
+    };
+
+    const checkSelfCollision = function(snake){
+      /*body.map(function(e){
+        if(head === e){
+          console.log('collision')
         }
-    }
+      })*/
+      for (var i = 0; i < snake.length - 1; i++) {
+        if(snake[snake.length - 1] === snake[i]){
+          console.log('collision')
+        }
+      }
 
-    const gameLoop = function(context, options) {
-      context.clearRect(options.x, options.y, options.width, options.height);
+    };
 
+    const gameLoop = function(canvas, context, snake, direction, frameLength) {
       window.onkeydown = function(e){
-        options.direction = e.keyCode;
+        direction = e.keyCode;
       }
-      //rotate(context, options);
-      setDirection(options);
-
-      /* cresce quando clicado. melhorar
       window.onclick = function(){
-        options = grow(options);
+        snake = grow(snake, direction);
       }
-      */
-      options = checkBorders(context, options);
-      
-      // must be the last line. will reflect all changes and re-draw the element
-      drawSnake(context, options);
+      checkBorders(canvas, snake[snake.length - 1]);
+      checkSelfCollision(snake);
+      //checkSelfCollision(snake.splice(0, snake.length - 2), snake[snake.length - 1]);
+      advance(context, snake, direction);
 
       setTimeout(function(){
-        gameLoop(context, options, options.frameLength);
-      }, options.frameLength); //do it all again
+        gameLoop(canvas, context, snake, direction, frameLength);
+      }, frameLength); //do it all again 
     };
 
     window.onload = function() {
       const 
         canvas = setCanvas(),
-        context = setContext(canvas, '#000', '#fff')
-        options = {
-          color: '#fe57a1',
-          x: parseInt(Math.random() * canvas.width),
-          y: parseInt(Math.random() * canvas.height),
-          width: 20,
-          height: 10,
-          frameLength: 100,
-          canvasWidth: canvas.width,
-          canvasHeight: canvas.height,
-          direction: 40
-        };
+        context = setContext(canvas, '#fe57a1')
+      let snake = [];
 
-      gameLoop(context, options);
+      snake.push({
+        x:parseInt(Math.random() * window.innerWidth),
+        y:parseInt(Math.random() * window.innerHeight)
+      });
+      snake.push({
+        x:snake[snake.length - 1].x + 10,
+        y:snake[snake.length - 1].y + 10
+      });
+      snake.push({
+        x:snake[snake.length - 1].x + 10,
+        y:snake[snake.length - 1].y + 10
+      });
+
+      gameLoop(canvas, context, snake, 37, 100);
 
     }
   </script>
